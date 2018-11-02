@@ -18,5 +18,8 @@ export function setState(newStatePortion) {
 }
 
 export function dispatch(action) {
+    if (action instanceof Promise) {
+        return;
+    }
     setState(typeof action === 'function' ? action({...state}) : action);
 }
