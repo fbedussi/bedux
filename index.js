@@ -12,6 +12,9 @@ export function getState() {
 }
 
 export function setState(newStatePortion) {
+    if (newStatePortion instanceof Promise) {
+        return;
+    }
     const oldState = state;
     state = {...state, ...newStatePortion};
     stateSubscribers.forEach((cb) => cb(state, oldState));
