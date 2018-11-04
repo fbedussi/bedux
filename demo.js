@@ -1,4 +1,4 @@
-import {setState, dispatch, subscribeState} from './index.js';
+import {setState, dispatch, subscribeState} from './bedux.js';
 
 const counter = document.querySelector('#counter');
 const plusOneBtn = document.querySelector('#plusOne');
