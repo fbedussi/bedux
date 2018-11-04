@@ -4,6 +4,17 @@ A minimalistic global state manager
 
 [demo](https://fbedussi.github.io/bedux/).
 
+Bedux is a simple yet powerful global state manager, heavily inspierd by hyperApp state management. It differs from other solutions, like Redux, in that actions are not messages that can or cannot be listend to to modify the state. In Bedux actions are functions that, when dispatched, directly modify the state. This is more *deterministic*, *less verbose* and *less error prone* compared to a pub/sub pattern. No need to define action's types, actions, action creator and reducers. No need to double check that the string written as the action's type matches the string used in the reducer. You just define a bunch of functions that receive values and return an udated state portion. There's no risk to forget to listen to an action and no risk to mispell an action's type. And say goodbye to that ugly mega switch statement too. 
+Whenever Bedux returs the state it performs a shallow copy of the previous state, so a minimum grade of *immutability is enforced*. 
+The downside is a little less freedom and more coupling compared to a pub/sub pattern. So it may or may not be the right tool, depending on your coding style and the app you are building.  
+Do you need *async actions*? Bedux has you covered, without any additional lines of code. Just use a function that returns a promise. Functions that return a promise don't trigger state changes. To update state just dispatch another action when the async operation completes. 
+
+## Api
+- setState(state: object): sets the initial state
+- subscribeState(callback: (state, oldState) => void): register a callback that will be called whenever the state changes. The callback receives two parameter: the new and the old state. 
+- unsubscribeState(callback): removes the callback from the subscriber list.  
+- dispatch(action: (value) => (state) => updatedStatePortion): dispatch an action.
+
 ## Getting started
 ```html
 <h1>Bedux demo</h1>
