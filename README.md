@@ -13,6 +13,8 @@ Do you need *async actions*? Bedux has you covered, without any additional lines
 - setState(state: object): sets the initial state
 - subscribeState(callback: (state, oldState) => void): register a callback that will be called whenever the state changes. The callback receives two parameter: the new and the old state. 
 - unsubscribeState(callback): removes the callback from the subscriber list.  
+- subscribePartialState(callback: (state, oldState) => void, prop: string) register a callback that will be called only when state.prop will change.
+- unsubscribePartialState(callback: (state, oldState) => void, prop: string) removes the callback from the subscriber list.
 - dispatch(action: (value) => (state) => updatedStatePortion): dispatch an action.
 
 ## Getting started
