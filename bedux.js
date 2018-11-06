@@ -42,11 +42,16 @@ export function setState(newStatePortion) {
     
     stateSubscribers.forEach((cb) => cb(state, oldState));
 
-    Object.entries(partialStateSubscribers).forEach( ([prop, subscribers]) => {
-        if(oldState[prop] !== state[prop]) {
-            subscribers.forEach((cb) => cb(state, oldState));
-        }        
-    });
+    Object.entries(partialStateSubscribers)
+        .map( ([prop, subscribers]) => (
+            {prop, subscribers}
+        ))
+        .filter( ({prop}) =>
+            oldState[prop] !== state[prop]
+        )
+        .forEach( ({subscribers}) =>
+            subscribers.forEach((cb) => cb(state, oldState))
+        );
 }
 
 export function dispatch(action) {
