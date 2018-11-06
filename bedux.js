@@ -4,12 +4,20 @@ let stateSubscribers = [];
 let partialStateSubscribers = {};
 
 export function subscribeState(cb) {
+    if(typeof cb !== 'function') {
+        return;
+    }
+    
     unsubscribeState(cb);
     stateSubscribers.push(cb);
 }
 
 export function subscribePartialState(cb, prop) {
-    unsubscribeState(cb);
+    if(typeof cb !== 'function') {
+        return;
+    }
+    
+    unsubscribePartialState(cb, prop);
 
     if(typeof partialStateSubscribers[prop] === 'undefined') {
         partialStateSubscribers[prop] = [];

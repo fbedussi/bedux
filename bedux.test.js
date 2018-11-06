@@ -40,49 +40,93 @@ test('setState should not update state if receives a promise', () => {
     expect(getState()).toEqual(state);
 });
 
-test('subscribeState should add a listener to state updates', () => {
-    const { setState, subscribeState } = requireModule();
+describe('subscribePartialState', () => {
+    test('should add a listener to state updates', () => {
+        const { setState, subscribeState } = requireModule();
 
-    const mockCallback = jest.fn();
-    
-    subscribeState(mockCallback);
-    setState({c: 'c'});
-    
-    expect(mockCallback).toBeCalled();
+        const mockCallback = jest.fn();
+        
+        subscribeState(mockCallback);
+        setState({c: 'c'});
+        
+        expect(mockCallback).toBeCalled();
+    });
+
+    test('should not add the listener to state updates if it\'s not a function', () => {
+        const { setState, subscribeState } = requireModule();
+
+        subscribeState({});
+        
+        expect( setState({a: 'a'}) );
+    });
+
+    test('should prevent multiple subscription with the same callback', () => {
+        const { setState, subscribeState } = requireModule();
+
+        const mockCallback = jest.fn();
+        
+        subscribeState(mockCallback);
+        subscribeState(mockCallback);    
+        setState({c: 'c2'});
+        
+        expect(mockCallback).toHaveBeenCalledTimes(1);
+    });
 });
 
-test('subscribePartialState should run listener only when the relevant portion of the state is changed', () => {
-    const { setState, subscribePartialState } = requireModule();
+describe('subscribePartialState', () => {
+    test('listeners should be executed only when the relevant portion of the state is changed', () => {
+        const { setState, subscribePartialState } = requireModule();
+    
+        const mockCallback = jest.fn();
+        
+        subscribePartialState(mockCallback, 'h');
+        setState({h: 'h'});
+        
+        expect(mockCallback).toBeCalled();
+    });
+    
+    test('listeners should not be executed when a non relevant portion of the state is changed', () => {
+        const { setState, subscribePartialState } = requireModule();
+    
+        const mockCallback = jest.fn();
+        
+        subscribePartialState(mockCallback, 'i');
+        setState({l: 'l'});
+        
+        expect(mockCallback).not.toBeCalled();
+    });
+    
+    test('should not add the listener to state updates if it\'s not a function', () => {
+        const { setState, subscribePartialState } = requireModule();
+    
+        subscribePartialState({}, 'a');
+        
+        expect( setState({a: 'a'}) );
+    });
 
-    const mockCallback = jest.fn();
-    
-    subscribePartialState(mockCallback, 'h');
-    setState({h: 'h'});
-    
-    expect(mockCallback).toBeCalled();
-});
+    test('should prevent multiple subscription with the same callback for the same partial', () => {
+        const { setState, subscribePartialState } = requireModule();
 
-test('subscribePartialState should not run listener when a non relevant portion of the state is changed', () => {
-    const { setState, subscribePartialState } = requireModule();
+        const mockCallback = jest.fn();
+        
+        subscribePartialState(mockCallback, 'a');
+        subscribePartialState(mockCallback, 'a');    
+        setState({a: 'a'});
+        
+        expect(mockCallback).toHaveBeenCalledTimes(1);
+    });
 
-    const mockCallback = jest.fn();
-    
-    subscribePartialState(mockCallback, 'i');
-    setState({l: 'l'});
-    
-    expect(mockCallback).not.toBeCalled();
-});
+    test('should note prevent multiple subscription with the same callback for different partials', () => {
+        const { setState, subscribePartialState } = requireModule();
 
-test('prevent multiple subscription with the same callback', () => {
-    const { setState, subscribeState } = requireModule();
-
-    const mockCallback = jest.fn();
-    
-    subscribeState(mockCallback);
-    subscribeState(mockCallback);    
-    setState({c: 'c2'});
-    
-    expect(mockCallback).toHaveBeenCalledTimes(1);
+        const mockCallback = jest.fn();
+        
+        subscribePartialState(mockCallback, 'a');
+        subscribePartialState(mockCallback, 'b');    
+        setState({a: 'a', b: 'b'});
+        
+        expect(mockCallback).toHaveBeenCalledTimes(2);
+    });
 });
 
 test('unsubscribeState should remove specified listener from state update notifications', () => {
