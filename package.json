@@ -4,7 +4,8 @@
   "description": "A minimalistix global state manager",
   "main": "bedux.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "testWatch": "jest --watch"
   },
   "repository": {
     "type": "git",
