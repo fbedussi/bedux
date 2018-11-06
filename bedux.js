@@ -1,10 +1,21 @@
 let state = {}
 
 let stateSubscribers = [];
+let partialStateSubscribers = {};
 
 export function subscribeState(cb) {
     unsubscribeState(cb);
     stateSubscribers.push(cb);
+}
+
+export function subscribeToPartialState(cb, prop) {
+    unsubscribeState(cb);
+
+    if(typeof partialStateSubscribers[prop] === 'undefined') {
+        partialStateSubscribers[prop] = [];
+    }
+
+    partialStateSubscribers[prop].push(cb);
 }
 
 export function unsubscribeState(cb) {
@@ -22,7 +33,14 @@ export function setState(newStatePortion) {
     }
     const oldState = state;
     state = {...state, ...newStatePortion};
+    
     stateSubscribers.forEach((cb) => cb(state, oldState));
+
+    Object.entries(partialStateSubscribers).forEach( ([prop, subscribers]) => {
+        if(oldState[prop] !== state[prop]) {
+            subscribers.forEach((cb) => cb(state, oldState));
+        }        
+    });
 }
 
 export function dispatch(action) {
