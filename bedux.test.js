@@ -1,20 +1,20 @@
+const requireModule = () => require('./bedux');
+
 beforeEach(() => {
     jest.clearAllMocks()
         .resetModules();
 })
 
-test('getState', () => {
-    const { getState } = require('./bedux');
+test('getState should return current state', () => {
+    const { getState } = requireModule();
     
     expect(getState()).toEqual({});
 });
 
-test('setState', () => {
-    const { setState, getState } = require('./bedux');
+test('setState should update the state', () => {
+    const { setState, getState } = requireModule();
 
-    const state = {
-        a: 'a'
-    };
+    const state = {a: 'a'};
     setState(state)
 
     expect(getState()).toEqual(state);
@@ -25,8 +25,8 @@ test('setState', () => {
     expect(getState()).toEqual({...state, ...stateUpdate})
 });
 
-test('do not update state if setState recevies a promise', () => {
-    const { setState, getState } = require('./bedux');
+test('setState should not update state if receives a promise', () => {
+    const { setState, getState } = requireModule();
 
     const state = {
         a: 'a'
@@ -40,8 +40,8 @@ test('do not update state if setState recevies a promise', () => {
     expect(getState()).toEqual(state);
 });
 
-test('subscription', () => {
-    const { setState, subscribeState } = require('./bedux');
+test('subscribeState should add a listener to state updates', () => {
+    const { setState, subscribeState } = requireModule();
 
     const mockCallback = jest.fn();
     
@@ -51,30 +51,30 @@ test('subscription', () => {
     expect(mockCallback).toBeCalled();
 });
 
-test('subscribeToPartialState should run listener only when the relevant portion of the state is changed', () => {
-    const { setState, subscribeToPartialState } = require('./bedux');
+test('subscribePartialState should run listener only when the relevant portion of the state is changed', () => {
+    const { setState, subscribePartialState } = requireModule();
 
     const mockCallback = jest.fn();
     
-    subscribeToPartialState(mockCallback, 'h');
+    subscribePartialState(mockCallback, 'h');
     setState({h: 'h'});
     
     expect(mockCallback).toBeCalled();
 });
 
-test('subscribeToPartialState should not run listener when a non relevant portion of the state is changed', () => {
-    const { setState, subscribeToPartialState } = require('./bedux');
+test('subscribePartialState should not run listener when a non relevant portion of the state is changed', () => {
+    const { setState, subscribePartialState } = requireModule();
 
     const mockCallback = jest.fn();
     
-    subscribeToPartialState(mockCallback, 'i');
+    subscribePartialState(mockCallback, 'i');
     setState({l: 'l'});
     
     expect(mockCallback).not.toBeCalled();
 });
 
 test('prevent multiple subscription with the same callback', () => {
-    const { setState, subscribeState } = require('./bedux');
+    const { setState, subscribeState } = requireModule();
 
     const mockCallback = jest.fn();
     
@@ -85,8 +85,8 @@ test('prevent multiple subscription with the same callback', () => {
     expect(mockCallback).toHaveBeenCalledTimes(1);
 });
 
-test('unsubscription', () => {
-    const { setState, subscribeState, unsubscribeState } = require('./bedux');
+test('unsubscribeState should remove specified listener from state update notifications', () => {
+    const { setState, subscribeState, unsubscribeState } = requireModule();
 
     const mockCallback = jest.fn();
 
@@ -98,26 +98,41 @@ test('unsubscription', () => {
     expect(mockCallback).not.toBeCalled();
 });
 
-test('dispatch an object', () => {
-    const { getState, dispatch } = require('./bedux');
+test('unsubscribePartialState should remove specified listener for given prop from state update notifications', () => {
+    const { setState, subscribePartialState, unsubscribePartialState } = requireModule();
 
-    dispatch({e: 'e'});
+    const mockCallback = jest.fn();
 
-    expect(getState()).toHaveProperty('e', 'e');
+    subscribePartialState(mockCallback, 'd');
+    unsubscribePartialState(mockCallback, 'd');
+
+    setState({d: 'd'});
+
+    expect(mockCallback).not.toBeCalled();
 });
 
-test('dispatch a function', () => {
-    const { getState, dispatch } = require('./bedux');
-
-    dispatch(() => ({f: 'f'}));
-
-    expect(getState()).toHaveProperty('f', 'f');    
+describe('dispatch', () => {
+    test('should accept an object', () => {
+        const { getState, dispatch } = requireModule();
+    
+        dispatch({e: 'e'});
+    
+        expect(getState()).toHaveProperty('e', 'e');
+    });
+    
+    test('should accept a function', () => {
+        const { getState, dispatch } = requireModule();
+    
+        dispatch(() => ({f: 'f'}));
+    
+        expect(getState()).toHaveProperty('f', 'f');    
+    });
+    
+    test('of a promise should not trigger a state update', () => {
+        const { getState, dispatch } = requireModule();
+    
+        dispatch(Promise.resolve({g: 'g'}));
+    
+        expect(getState()).not.toHaveProperty('g', 'g');    
+    })    
 });
-
-test('dispatching a promise do not trigger a state update', () => {
-    const { getState, dispatch } = require('./bedux');
-
-    dispatch(Promise.resolve({g: 'g'}));
-
-    expect(getState()).not.toHaveProperty('g', 'g');    
-})

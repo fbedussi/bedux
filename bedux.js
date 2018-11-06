@@ -8,7 +8,7 @@ export function subscribeState(cb) {
     stateSubscribers.push(cb);
 }
 
-export function subscribeToPartialState(cb, prop) {
+export function subscribePartialState(cb, prop) {
     unsubscribeState(cb);
 
     if(typeof partialStateSubscribers[prop] === 'undefined') {
@@ -20,6 +20,12 @@ export function subscribeToPartialState(cb, prop) {
 
 export function unsubscribeState(cb) {
     stateSubscribers = stateSubscribers.filter((registeredCb) => registeredCb != cb); 
+}
+
+export function unsubscribePartialState(cb, prop) {
+    if(typeof partialStateSubscribers[prop] !== 'undefined') {
+        partialStateSubscribers[prop] = partialStateSubscribers[prop].filter((registeredCb) => registeredCb != cb); ;
+    }
 }
 
 //Use in case of emergency, normally state shoud be accessed trough actions
