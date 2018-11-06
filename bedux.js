@@ -4,7 +4,7 @@ let stateSubscribers = [];
 let partialStateSubscribers = {};
 
 export function subscribeState(cb) {
-    if(typeof cb !== 'function') {
+    if (typeof cb !== 'function') {
         return;
     }
     
@@ -13,13 +13,13 @@ export function subscribeState(cb) {
 }
 
 export function subscribePartialState(cb, prop) {
-    if(typeof cb !== 'function') {
+    if (typeof cb !== 'function') {
         return;
     }
     
     unsubscribePartialState(cb, prop);
 
-    if(typeof partialStateSubscribers[prop] === 'undefined') {
+    if (typeof partialStateSubscribers[prop] === 'undefined') {
         partialStateSubscribers[prop] = [];
     }
 
@@ -31,7 +31,7 @@ export function unsubscribeState(cb) {
 }
 
 export function unsubscribePartialState(cb, prop) {
-    if(typeof partialStateSubscribers[prop] !== 'undefined') {
+    if (typeof partialStateSubscribers[prop] !== 'undefined') {
         partialStateSubscribers[prop] = partialStateSubscribers[prop].filter((registeredCb) => registeredCb != cb); ;
     }
 }
@@ -45,20 +45,18 @@ export function setState(newStatePortion) {
     if (newStatePortion instanceof Promise) {
         return;
     }
+    
     const oldState = state;
     state = {...state, ...newStatePortion};
     
     stateSubscribers.forEach((cb) => cb(state, oldState));
 
-    Object.entries(partialStateSubscribers)
-        .map( ([prop, subscribers]) => (
-            {prop, subscribers}
-        ))
-        .filter( ({prop}) =>
-            oldState[prop] !== state[prop]
+    Object.keys(partialStateSubscribers)
+        .filter( (key) =>
+            oldState[key] !== state[key]
         )
-        .forEach( ({subscribers}) =>
-            subscribers.forEach((cb) => cb(state, oldState))
+        .forEach( (key) =>
+            partialStateSubscribers[key].forEach((cb) => cb(state, oldState))
         );
 }
 
