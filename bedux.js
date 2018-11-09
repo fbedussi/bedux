@@ -12,7 +12,7 @@ export function subscribeState(cb) {
     stateSubscribers.push(cb);
 }
 
-export function subscribePartialState(cb, prop) {
+export function subscribePartialState(prop, cb) {
     if (typeof cb !== 'function') {
         return;
     }
@@ -30,15 +30,23 @@ export function unsubscribeState(cb) {
     stateSubscribers = stateSubscribers.filter((registeredCb) => registeredCb != cb); 
 }
 
-export function unsubscribePartialState(cb, prop) {
+export function unsubscribePartialState(prop, cb) {
     if (typeof partialStateSubscribers[prop] !== 'undefined') {
         partialStateSubscribers[prop] = partialStateSubscribers[prop].filter((registeredCb) => registeredCb != cb); ;
     }
 }
 
-//Use in case of emergency, normally state shoud be accessed trough actions
+//Use in case of emergency, normally state should be accessed trough actions
 export function getState() {
     return {...state};
+}
+
+function getNestedValue(obj, key) {
+    return key
+        .split('.')
+        .reduce((nestedValue, partialKey) => {
+            return nestedValue.hasOwnProperty(partialKey) ? nestedValue[partialKey] : getNestedValue;
+        }, obj);
 }
 
 export function setState(newStatePortion) {
@@ -53,10 +61,10 @@ export function setState(newStatePortion) {
 
     Object.keys(partialStateSubscribers)
         .filter( (key) =>
-            oldState[key] !== state[key]
+            getNestedValue(oldState, key) !== getNestedValue(state, key)
         )
         .forEach( (key) =>
-            partialStateSubscribers[key].forEach((cb) => cb(state, oldState))
+            partialStateSubscribers[key].forEach((cb) => cb(getNestedValue(state, key), getNestedValue(oldState, key)))
         );
 }
 
