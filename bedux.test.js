@@ -79,8 +79,23 @@ describe('subscribePartialState', () => {
     
         const mockCallback = jest.fn();
         
-        subscribePartialState(mockCallback, 'h');
+        subscribePartialState('h', mockCallback);
         setState({h: 'h'});
+        
+        expect(mockCallback).toBeCalled();
+    });
+
+    test('listeners should be executed only when the relevant portion of the *nested* state is changed', () => {
+        const { setState, subscribePartialState } = requireModule();
+    
+        const mockCallback = jest.fn();
+        
+        subscribePartialState('boo.baz.foo', mockCallback);
+        setState({boo: {
+            baz: {
+                foo: 'foo'
+            }
+        }});
         
         expect(mockCallback).toBeCalled();
     });
@@ -90,7 +105,7 @@ describe('subscribePartialState', () => {
     
         const mockCallback = jest.fn();
         
-        subscribePartialState(mockCallback, 'i');
+        subscribePartialState('i', mockCallback);
         setState({l: 'l'});
         
         expect(mockCallback).not.toBeCalled();
@@ -99,7 +114,7 @@ describe('subscribePartialState', () => {
     test('should not add the listener to state updates if it\'s not a function', () => {
         const { setState, subscribePartialState } = requireModule();
     
-        subscribePartialState({}, 'a');
+        subscribePartialState('a', {});
         
         expect( setState({a: 'a'}) );
     });
@@ -109,20 +124,20 @@ describe('subscribePartialState', () => {
 
         const mockCallback = jest.fn();
         
-        subscribePartialState(mockCallback, 'a');
-        subscribePartialState(mockCallback, 'a');    
+        subscribePartialState('a', mockCallback);
+        subscribePartialState('a', mockCallback);    
         setState({a: 'a'});
         
         expect(mockCallback).toHaveBeenCalledTimes(1);
     });
 
-    test('should note prevent multiple subscription with the same callback for different partials', () => {
+    test('should not prevent multiple subscription with the same callback for different partials', () => {
         const { setState, subscribePartialState } = requireModule();
 
         const mockCallback = jest.fn();
         
-        subscribePartialState(mockCallback, 'a');
-        subscribePartialState(mockCallback, 'b');    
+        subscribePartialState('a', mockCallback);
+        subscribePartialState('b', mockCallback);    
         setState({a: 'a', b: 'b'});
         
         expect(mockCallback).toHaveBeenCalledTimes(2);
@@ -147,8 +162,8 @@ test('unsubscribePartialState should remove specified listener for given prop fr
 
     const mockCallback = jest.fn();
 
-    subscribePartialState(mockCallback, 'd');
-    unsubscribePartialState(mockCallback, 'd');
+    subscribePartialState('d', mockCallback);
+    unsubscribePartialState('d', mockCallback);
 
     setState({d: 'd'});
 

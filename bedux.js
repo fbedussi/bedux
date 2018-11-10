@@ -17,7 +17,7 @@ export function subscribePartialState(prop, cb) {
         return;
     }
     
-    unsubscribePartialState(cb, prop);
+    unsubscribePartialState(prop, cb);
 
     if (typeof partialStateSubscribers[prop] === 'undefined') {
         partialStateSubscribers[prop] = [];
