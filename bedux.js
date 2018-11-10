@@ -60,12 +60,13 @@ export function setState(newStatePortion) {
     stateSubscribers.forEach((cb) => cb(state, oldState));
 
     Object.keys(partialStateSubscribers)
-        .filter( (key) =>
-            getNestedValue(oldState, key) !== getNestedValue(state, key)
-        )
-        .forEach( (key) =>
-            partialStateSubscribers[key].forEach((cb) => cb(getNestedValue(state, key), getNestedValue(oldState, key)))
-        );
+        .forEach( (key) => {
+            const oldValue = getNestedValue(oldState, key);
+            const newValue = getNestedValue(state, key); 
+            if (newValue !== oldValue) {
+                partialStateSubscribers[key].forEach((cb) => cb(newValue, oldValue))
+            } 
+        });
 }
 
 export function dispatch(action) {
