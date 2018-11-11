@@ -45,7 +45,7 @@ function getNestedValue(obj, key) {
     return key
         .split('.')
         .reduce((nestedValue, partialKey) => {
-            return nestedValue.hasOwnProperty(partialKey) ? nestedValue[partialKey] : getNestedValue;
+            return nestedValue && nestedValue.hasOwnProperty(partialKey) ? nestedValue[partialKey] : null;
         }, obj);
 }
 

@@ -99,6 +99,21 @@ describe('subscribePartialState', () => {
         
         expect(mockCallback).toBeCalled();
     });
+
+    test('subscibing non a non existing prop doesn\'t trigger an error and doesn\'t trigger the callback', () => {
+        const { setState, subscribePartialState } = requireModule();
+    
+        const mockCallback = jest.fn();
+        
+        subscribePartialState('boo.foo.baz', mockCallback);
+        setState({boo: {
+            baz: {
+                foo: 'foo'
+            }
+        }});
+        
+        expect(mockCallback).not.toBeCalled();
+    });
     
     test('listeners should not be executed when a non relevant portion of the state is changed', () => {
         const { setState, subscribePartialState } = requireModule();
