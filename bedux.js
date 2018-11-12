@@ -45,7 +45,7 @@ function getNestedValue(obj, key) {
     return key
         .split('.')
         .reduce((nestedValue, partialKey) => {
-            return nestedValue && nestedValue.hasOwnProperty(partialKey) ? nestedValue[partialKey] : null;
+            return nestedValue && nestedValue.hasOwnProperty(partialKey) ? nestedValue[partialKey] : undefined;
         }, obj);
 }
 
@@ -55,6 +55,7 @@ export function setState(newStatePortion) {
     }
     
     const oldState = state;
+    
     state = {...state, ...newStatePortion};
     
     stateSubscribers.forEach((cb) => cb(state, oldState));
@@ -64,7 +65,7 @@ export function setState(newStatePortion) {
             const oldValue = getNestedValue(oldState, key);
             const newValue = getNestedValue(state, key); 
             if (newValue !== oldValue) {
-                partialStateSubscribers[key].forEach((cb) => cb(newValue, oldValue))
+                partialStateSubscribers[key].forEach((cb) => cb(state, oldState))
             } 
         });
 }
