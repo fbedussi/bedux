@@ -3,6 +3,11 @@ let state = {}
 let stateSubscribers = [];
 let partialStateSubscribers = {};
 
+let errorMessages = {
+    setState: "Promises aren't accepted, setState accepts only plain objects or functions",
+    dispatch: "Promises aren't accepted, dispatch accepts only plain objects or functions as actions"
+}
+
 export function subscribeState(cb) {
     if (typeof cb !== 'function') {
         return;
@@ -49,9 +54,9 @@ function getNestedValue(obj, key) {
         }, obj);
 }
 
-export function setState(newStatePortion) {
+export function setState(newStatePortion) {    
     if (newStatePortion instanceof Promise) {
-        return;
+        throw new Error( errorMessages.setState );
     }
     
     const oldState = state;
@@ -72,7 +77,8 @@ export function setState(newStatePortion) {
 
 export function dispatch(action) {
     if (action instanceof Promise) {
-        return;
+        throw new Error( errorMessages.dispatch );
     }
+
     setState(typeof action === 'function' ? action({...state}) : action);
 }

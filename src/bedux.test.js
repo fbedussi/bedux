@@ -1,5 +1,11 @@
 const requireModule = () => require('./bedux');
 
+let errorMessages = {
+    setState: "Promises aren't accepted, setState accepts only plain objects or functions",
+    dispatch: "Promises aren't accepted, dispatch accepts only plain objects or functions as actions"
+}
+
+
 beforeEach(() => {
     jest.clearAllMocks()
         .resetModules();
@@ -26,21 +32,14 @@ test('setState should update the state', () => {
 });
 
 test('setState should not update state if receives a promise', () => {
-    const { setState, getState } = requireModule();
-
-    const state = {
-        a: 'a'
-    };
-    setState(state)
-
-    setState(new Promise(resolve => resolve()));
-    expect(getState()).toEqual(state);
+    const { setState } = requireModule();
     
-    setState(Promise.resolve());
-    expect(getState()).toEqual(state);
+    expect( () => {
+        setState( new Promise(resolve => resolve()) ) 
+    }).toThrowError( errorMessages.setState );
 });
 
-describe('subscribePartialState', () => {
+describe('subscribeState', () => {
     test('should add a listener to state updates', () => {
         const { setState, subscribeState } = requireModule();
 
@@ -157,6 +156,20 @@ describe('subscribePartialState', () => {
         
         expect(mockCallback).toHaveBeenCalledTimes(2);
     });
+
+    test('should not prevent multiple subscription with different callbacks to the same partial', () => {
+        const { setState, subscribePartialState } = requireModule();
+
+        const mockCallbackA = jest.fn();
+        const mockCallbackB = jest.fn();
+        
+        subscribePartialState('a', mockCallbackA);
+        subscribePartialState('a', mockCallbackB);    
+        setState({a: 'a'});
+        
+        expect(mockCallbackA).toHaveBeenCalledTimes(1);
+        expect(mockCallbackB).toHaveBeenCalledTimes(1);
+    });
 });
 
 test('unsubscribeState should remove specified listener from state update notifications', () => {
@@ -195,18 +208,21 @@ describe('dispatch', () => {
     });
     
     test('should accept a function', () => {
-        const { getState, dispatch } = requireModule();
+        const { getState, dispatch, setState } = requireModule();
     
-        dispatch(() => ({f: 'f'}));
+        setState({a: 1});
+
+        dispatch((state) => ({...state, b: state.a+1}));
     
-        expect(getState()).toHaveProperty('f', 'f');    
+        expect(getState()).toHaveProperty('a', 1);    
+        expect(getState()).toHaveProperty('b', 2);    
     });
     
-    test('of a promise should not trigger a state update', () => {
-        const { getState, dispatch } = requireModule();
+    test('should throw an error if a Promise is dispatched', () => {
+        const { dispatch } = requireModule();
     
-        dispatch(Promise.resolve({g: 'g'}));
-    
-        expect(getState()).not.toHaveProperty('g', 'g');    
-    })    
+        expect( () => {
+            dispatch(Promise.resolve({g: 'g'})) 
+        }).toThrowError( errorMessages.dispatch );
+    });
 });
